@@ -1,149 +1,162 @@
-from tkinter import *
-from random import randrange as rnd
+import turtle
 import time
-root = Tk()
-root.geometry('600x800')
-canv = Canvas(root, bg = '#0044aa')
-canv.pack(fill=BOTH,expand = 1)
- 
-class ball():
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.r = 10
-        self.vx = 0
-        self.vy = 0
-        self.goal = 0
-        self.id= canv.create_oval(self.x-self.r,self.y-self.r,self.x+self.r,self.y+self.r, fill = 'white')
-         
-    def move(self):
-        self.x += self.vx
-        self.y += self.vy
-        active_wall = list(set(canv.find_withtag('wall')) & set(canv.find_overlapping(self.x - self.r*0.7,self.y - self.r*0.7,self.x + self.r*0.7,self.y + self.r*0.7)))
-        if active_wall:
-            if 'x' in canv.gettags(active_wall[0]):
-                self.vx = -self.vx
-            if 'y' in canv.gettags(active_wall[0]):
-                self.vy = -self.vy
-                x1,y1,x2,y2 = canv.coords(active_wall[0])
-                xc = (x1+x2)/2
-                w = abs(x1-x2)
-                self.vx += (self.x-xc)/w*10
-        self.paint()
-        lines = canv.find_overlapping(self.x - self.r*0.7,self.y - self.r*0.7,self.x + self.r*0.7,self.y + self.r*0.7)
-        if len(lines) > 1:
-            if "g1" in canv.gettags(lines[1]):
-                self.goal = 1
-                self.kill()
-            if "g2" in canv.gettags(lines[1]):
-                self.goal = 2
-                self.kill()
-    def kill(self):
-        global game
-        game = 0
-        self.x = 300
-        self.vx = 0
-        if self.goal == 2:
-            self.vy = -8
-            self.y = 100
-        if self.goal == 1:
-            self.y = 700
-            self.vy = 8
-        self.paint()
-     
-    def paint(self):
-        canv.coords(self.id, self.x-self.r,self.y-self.r,self.x+self.r,self.y+self.r)
-         
-class gamer():
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.w = 60
-        self.v = 6
-        self.d = 4
-        self.mode = ''
-        self.score = 0
-        self.xy_score = (0,0)
-        self.id= canv.create_rectangle(self.x-self.w,self.y-self.d,self.x+self.w,self.y+self.d, fill = 'white', tags = ('wall','y'))
-        self.id_score = canv.create_text(0,0,text = '', font = 'Tahoma 24', fill = 'white')
-         
-    def paint(self):
-        canv.coords(self.id, self.x-self.w,self.y-self.d,self.x+self.w,self.y+self.d)
-        canv.coords(self.id_score, self.xy_score[0],self.xy_score[1])
-        canv.itemconfig(self.id_score, text = self.score)
- 
-    def move(self):
-        if self.mode == 'left' and self.x > self.w//2:
-            self.x -= self.v
-        elif self.mode == 'right' and self.x < (590-self.w//2):
-            self.x += self.v
-        self.paint()
- 
-b = ball()
-b.x = 100
-b.y = 100
-b.vx = 4
-b.vy = 4
- 
-         
-canv.create_line(10,10,10,790,width = 10, fill = 'white', tags = ('wall','x'))
-canv.create_line(590,10,590,790,width = 10, fill = 'white', tags = ('wall','x'))
-canv.create_line(10,790/2,590,790/2,width = 2, fill = 'white')
- 
-canv.create_line(10,11,590,11,width = 2, fill = 'white', tag = 'g1')
-canv.create_line(10,789,590,789,width = 2, fill = 'white', tag = 'g2')
- 
- 
-g1 = gamer()
-g1.x = 300
-g1.y = 20
-g1.paint()
-g1.xy_score = (30,50)
- 
-g2 = gamer()
-g2.x = 300
-g2.y = 780
-g2.paint()
-g2.xy_score = (30,450)
-game =  1
-def key_press(event):
-    global game
-    if event.keycode == 37:
-        g2.mode = 'left'
-    elif event.keycode == 39:
-        g2.mode = 'right'
- 
-    elif event.keycode == 65:
-        g1.mode = 'left'
-    elif event.keycode == 68:
-        g1.mode = 'right'
-         
-    elif event.keycode == 32:
-        game = 1
- 
-def key_release(event):
-    if event.keycode == 37 or event.keycode == 39:
-        g2.mode = ''
- 
-    elif event.keycode == 65 or event.keycode == 68:
-        g1.mode = ''
- 
-root.bind('<Key>', key_press)
-root.bind('<KeyRelease>', key_release)
- 
-while 1:
-    if game:
-        b.move()
-    g2.move()
-    g1.move()
-    if b.goal == 1:
-        g2.score += 1
-        b.goal = 0
-    elif b.goal == 2:
-        g1.score += 1
-        b.goal = 0
-    time.sleep(0.02)
-    canv.update()   
-     
- 
-mainloop()
+
+# Настройка экрана
+win = turtle.Screen()
+win.title("Pong by YourName")
+win.bgcolor("black")
+win.setup(width=800, height=600)
+win.tracer(0)
+
+# Ракетка A
+paddle_a = turtle.Turtle()
+paddle_a.speed(0)
+paddle_a.shape("square")
+paddle_a.color("white")
+paddle_a.shapesize(stretch_wid=5, stretch_len=1)
+paddle_a.penup()
+paddle_a.goto(-350, 0)
+
+# Ракетка B
+paddle_b = turtle.Turtle()
+paddle_b.speed(0)
+paddle_b.shape("square")
+paddle_b.color("white")
+paddle_b.shapesize(stretch_wid=5, stretch_len=1)
+paddle_b.penup()
+paddle_b.goto(350, 0)
+
+# Мяч (ускоренный)
+ball = turtle.Turtle()
+ball.speed(0)
+ball.shape("circle")
+ball.color("white")
+ball.penup()
+ball.goto(0, 0)
+ball.dx = 1.5  # Ускоренный мяч
+ball.dy = 1.5
+
+# Счет
+score_a = 0
+score_b = 0
+
+# Пишем счет
+pen = turtle.Turtle()
+pen.speed(0)
+pen.color("white")
+pen.penup()
+pen.hideturtle()
+pen.goto(0, 260)
+pen.write("Player А: 0  Player B: 0", align="center", font=("Courier", 24, "normal"))
+
+# Переменные для управления движением
+moving_up_a = False
+moving_down_a = False
+moving_up_b = False
+moving_down_b = False
+
+# Функции для управления игроком A
+def start_move_a_up():
+    global moving_up_a
+    moving_up_a = True
+
+def stop_move_a_up():
+    global moving_up_a
+    moving_up_a = False
+
+def start_move_a_down():
+    global moving_down_a
+    moving_down_a = True
+
+def stop_move_a_down():
+    global moving_down_a
+    moving_down_a = False
+
+# Функции для управления игроком B
+def start_move_b_up():
+    global moving_up_b
+    moving_up_b = True
+
+def stop_move_b_up():
+    global moving_up_b
+    moving_up_b = False
+
+def start_move_b_down():
+    global moving_down_b
+    moving_down_b = True
+
+def stop_move_b_down():
+    global moving_down_b
+    moving_down_b = False
+
+# Привязываем клавиши к функциям
+win.listen()
+win.onkeypress(start_move_a_up, "w")
+win.onkeyrelease(stop_move_a_up, "w")
+win.onkeypress(start_move_a_down, "s")
+win.onkeyrelease(stop_move_a_down, "s")
+
+win.onkeypress(start_move_b_up, "Up")
+win.onkeyrelease(stop_move_b_up, "Up")
+win.onkeypress(start_move_b_down, "Down")
+win.onkeyrelease(stop_move_b_down, "Down")
+
+# Основной игровой цикл
+while True:
+    win.update()
+
+    # Движение ракеток при удерживании клавиш
+    # Ракетка A
+    if moving_up_a and paddle_a.ycor() < 250:
+        y = paddle_a.ycor()
+        y += 15  
+        paddle_a.sety(y)
+    if moving_down_a and paddle_a.ycor() > -250:
+        y = paddle_a.ycor()
+        y -= 15
+        paddle_a.sety(y)
+    
+    # Ракетка B
+    if moving_up_b and paddle_b.ycor() < 250:
+        y = paddle_b.ycor()
+        y += 15
+        paddle_b.sety(y)
+    if moving_down_b and paddle_b.ycor() > -250:
+        y = paddle_b.ycor()
+        y -= 15
+        paddle_b.sety(y)
+
+    # Движение мяча
+    ball.setx(ball.xcor() + ball.dx)
+    ball.sety(ball.ycor() + ball.dy)
+
+    # Проверка столкновения с верхней/нижней границей
+    if ball.ycor() > 290 or ball.ycor() < -290:
+        ball.dy *= -1
+
+    # Проверка выхода за правую границу (счет игрока A)
+    if ball.xcor() > 390:
+        ball.goto(0, 0)
+        ball.dx *= -1
+        score_a += 1
+        pen.clear()
+        pen.write(f"Player A: {score_a}  Player B: {score_b}", align="center", font=("Courier", 24, "normal"))
+
+    # Проверка выхода за левую границу (счет игрока B)
+    if ball.xcor() < -390:
+        ball.goto(0, 0)
+        ball.dx *= -1
+        score_b += 1
+        pen.clear()
+        pen.write(f"Player A: {score_a}  Player B: {score_b}", align="center", font=("Courier", 24, "normal"))
+
+    # Отскок от ракеток
+    if (340 < ball.xcor() < 350) and (paddle_b.ycor() + 50 > ball.ycor() > paddle_b.ycor() - 50):
+        ball.setx(340)
+        ball.dx *= -1.1  
+
+    if (-350 < ball.xcor() < -340) and (paddle_a.ycor() + 50 > ball.ycor() > paddle_a.ycor() - 50):
+        ball.setx(-340)
+        ball.dx *= -1.1
+
+    time.sleep(0.01)
